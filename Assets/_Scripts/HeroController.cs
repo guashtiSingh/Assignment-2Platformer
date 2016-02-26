@@ -24,6 +24,7 @@ public class HeroController : MonoBehaviour {
 	public float jumpForce;
 	public Transform groundCheck;
 	public Transform camera;
+	public GameController gameController;
 
 	// private instance variables
 	private Animator _animator;
@@ -33,6 +34,10 @@ public class HeroController : MonoBehaviour {
 	private Transform _transform;
 	private Rigidbody2D _rigidBody2D;
 	private bool _isGrounded;
+	private AudioSource[] _audioSources;
+	private AudioSource _jumpSound;
+	private AudioSource _coinSound;
+	private AudioSource _hurtSound;
 
 	// Use this for initialization
 	void Start () {
@@ -46,6 +51,16 @@ public class HeroController : MonoBehaviour {
 		this._move = 0f;
 		this._jump = 0f;
 		this._facingRight = true;
+
+
+		//Setup AudioSources
+		this._audioSources = gameObject.GetComponents<AudioSource> ();
+		this._jumpSound = this._audioSources [0];
+		this._coinSound = this._audioSources [1];
+		this._hurtSound = this._audioSources [2];
+
+		//Place the hero in the correct starting position
+		this._spawn ();
 
 	}
 	
@@ -98,6 +113,7 @@ public class HeroController : MonoBehaviour {
 			if (this._jump > 0) {
 				//jump force
 				if (absVelY < this.velocityRange.maximum) {
+					this._jumpSound.Play ();
 					forceY = this.jumpForce;
 				}
 			}
@@ -110,6 +126,27 @@ public class HeroController : MonoBehaviour {
 		this._rigidBody2D.AddForce(new Vector2(forceX, forceY));
 		}
 
+
+	void OnCollisionEnter2D(Collision2D other) {
+		if(other.gameObject.CompareTag("Coin")) {
+			this._coinSound.Play ();
+			Destroy (other.gameObject);
+			this.gameController.ScoreValue += 10;
+		}
+
+		if(other.gameObject.CompareTag("Enemy")) {
+			this._spawn ();
+			this._hurtSound.Play ();
+			this.gameController.LivesValue--;
+		}
+
+		if(other.gameObject.CompareTag("Death")) {
+			this._spawn ();
+			this._hurtSound.Play ();
+			this.gameController.LivesValue--;
+		}
+	}
+
 		//Private Methods
 		private void _flip () {
 			if (this._facingRight) {
@@ -118,6 +155,10 @@ public class HeroController : MonoBehaviour {
 				this._transform.localScale = new Vector2 (-1, 1);
 			}
 		}
+
+	private void _spawn() {
+		this._transform.position = new Vector3 (-125f, 125f, 0);
+	}
 }
 
 
