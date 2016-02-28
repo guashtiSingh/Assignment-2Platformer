@@ -145,6 +145,12 @@ public class HeroController : MonoBehaviour {
 			this._hurtSound.Play ();
 			this.gameController.LivesValue--;
 		}
+
+
+		if(other.gameObject.CompareTag("Goal")) {
+			this.gameController.LivesValue = 0;
+			Destroy (gameObject);
+		}
 	}
 
 		//Private Methods
